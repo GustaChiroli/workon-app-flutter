@@ -1,8 +1,11 @@
 # workon_app
 
 A new Flutter project about manage your workout.
+
 flutter version: 3.38.1
+
 dart version   : 3.10.0
+
 dev tools      : 2.51.1
 
 ## Getting Started
