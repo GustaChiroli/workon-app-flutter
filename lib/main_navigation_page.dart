@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:workon_app/screens/home.dart';
 import 'package:workon_app/screens/profile_page.dart';
+import 'package:workon_app/screens/social/social_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -17,6 +18,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   final List<Widget> _pages = const [
     HomePage(),
     WorkoutsPage(),
+    SocialPage(),
     ProgressPage(),
     ProfilePage(),
   ];
@@ -76,6 +78,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               icon: Icon(Icons.fitness_center),
               label: "Workouts",
             ),
+            BottomNavigationBarItem(icon: Icon(Icons.people), label: "Social"),
             BottomNavigationBarItem(
               icon: Icon(Icons.show_chart),
               label: "Progress",
