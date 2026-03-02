@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:workon_app/screens/social/widgets/explore_widget.dart';
+import 'package:workon_app/screens/social/widgets/general_feed_widget.dart';
 import 'package:workon_app/screens/social/widgets/my_feed_widget.dart';
 import 'package:workon_app/widgets/main_card.dart';
 import 'package:workon_app/widgets/page_base_widget.dart';
@@ -114,9 +116,9 @@ class _SocialPageState extends State<SocialPage> {
             ),
           ),
           selectedButtonIndex == 1
-              ? Row(children: [Text("tela 1")])
+              ? GeneralFeedWidget()
               : selectedButtonIndex == 2
-              ? Row(children: [Text("tela 2")])
+              ? ExploreWidget()
               : MyFeedWidget(),
         ],
       ),
