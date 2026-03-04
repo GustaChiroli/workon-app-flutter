@@ -4,7 +4,8 @@ class PostModel {
   final String id;
   final String userId;
   final String caption;
-  final String imageUrl;
+  final String? imageUrl;
+  final String? imagePublicId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final PostCount count;
@@ -15,6 +16,7 @@ class PostModel {
     required this.userId,
     required this.caption,
     required this.imageUrl,
+    required this.imagePublicId,
     required this.createdAt,
     required this.updatedAt,
     required this.count,
@@ -27,6 +29,7 @@ class PostModel {
       userId: json['userId'],
       caption: json['caption'],
       imageUrl: json['imageUrl'],
+      imagePublicId: json['imagePublicId'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       count: PostCount.fromJson(json['_count']),
@@ -40,6 +43,7 @@ class PostModel {
       'userId': userId,
       'caption': caption,
       'imageUrl': imageUrl,
+      'imagePublicId': imagePublicId,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       '_count': count.toJson(),

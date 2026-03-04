@@ -7,6 +7,7 @@ import 'package:workon_app/storage/user_logged_storage.dart';
 
 class AuthService {
   final TokenStorage _tokenStorage = TokenStorage();
+  final UserLoggedStorage _userLoggedStorage = UserLoggedStorage();
   final UserLoggedStorage _userIdStorage = UserLoggedStorage();
   String url = 'http://10.0.2.2:3000/';
 
@@ -51,6 +52,7 @@ class AuthService {
 
   Future<void> logout(context) async {
     await _tokenStorage.deleteToken();
+    await _userLoggedStorage.deleteUser();
     if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),

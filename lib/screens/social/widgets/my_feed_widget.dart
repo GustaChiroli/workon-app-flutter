@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:workon_app/model/post/post_model.dart';
 import 'package:workon_app/services/post/post_services.dart';
 import 'package:workon_app/widgets/main_card.dart';
@@ -12,6 +15,8 @@ class MyFeedWidget extends StatefulWidget {
 
 class _MyFeedWidgetState extends State<MyFeedWidget> {
   bool isLiked = false;
+  final TextEditingController _captionController = TextEditingController();
+  File? _selectedImage;
   List<PostModel> _posts = [];
   void initState() {
     super.initState();
@@ -42,6 +47,48 @@ class _MyFeedWidgetState extends State<MyFeedWidget> {
     }
   }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _createPost() async {
+    if (_captionController.text.trim().isEmpty && _selectedImage == null) {
+      return;
+    }
+
+    final postsService = PostsServices();
+
+    await postsService.createPost(
+      context: context,
+      caption: _captionController.text.trim(),
+      imageFile: _selectedImage,
+    );
+
+    _captionController.clear();
+
+    setState(() {
+      _selectedImage = null;
+    });
+
+    _getMyPosts(); // atualiza feed
+  }
+
+  Future<void> _confirmDelete(String postId) async {
+    if (postId.isEmpty) {
+      return;
+    }
+    final postsService = PostsServices();
+    await postsService.removePost(postId);
+    _getMyPosts();
+  }
+
   Future<void> _getMyPosts() async {
     final postsService = PostsServices();
     try {
@@ -63,32 +110,82 @@ class _MyFeedWidgetState extends State<MyFeedWidget> {
       spacing: 20,
       children: [
         MainCard(
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 28,
-                backgroundColor: Color(0xFFFF6900),
-                child: Icon(Icons.person, size: 28, color: Colors.white),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextField(
-                  minLines: 1,
-                  maxLines: 4, // cresce até 4 linhas
-                  keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(
-                    hintText: 'No que você está pensando?',
-                    border: InputBorder.none,
-                    isCollapsed: true,
-                    contentPadding: EdgeInsets.zero,
+              Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Color(0xFFFF6900),
+                    child: Icon(Icons.person, size: 28, color: Colors.white),
                   ),
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      controller: _captionController,
+                      minLines: 1,
+                      maxLines: 4, // cresce até 4 linhas
+                      keyboardType: TextInputType.multiline,
+                      decoration: const InputDecoration(
+                        hintText: 'No que você está pensando?',
+                        border: InputBorder.none,
+                        isCollapsed: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _pickImage,
+                    icon: const Icon(Icons.image, color: Color(0xFF71717B)),
+                  ),
+                  IconButton(
+                    onPressed: _createPost,
+                    icon: const Icon(Icons.send, color: Color(0xFFFF6900)),
+                  ),
+                ],
+              ),
+              if (_selectedImage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          _selectedImage!,
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedImage = null;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(6),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: () => {},
-                icon: Icon(Icons.image, color: Color(0xFF71717B)),
-              ),
             ],
           ),
         ),
@@ -126,6 +223,35 @@ class _MyFeedWidgetState extends State<MyFeedWidget> {
                           ),
                         ],
                       ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, color: Colors.white54),
+                      color: const Color(0xFF18181B),
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          // _editPost(item);
+                        } else if (value == 'delete') {
+                          _confirmDelete(item.id);
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, size: 18, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text(
+                                'Excluir Post',
+                                style: TextStyle(
+                                  color: Color(0xFFFFFFFF),
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
