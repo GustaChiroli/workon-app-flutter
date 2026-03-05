@@ -9,6 +9,8 @@ class PostModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final PostCount count;
+  final bool likedByMe;
+  final String? likeId;
   final UserNameModel user;
 
   PostModel({
@@ -20,6 +22,8 @@ class PostModel {
     required this.createdAt,
     required this.updatedAt,
     required this.count,
+    required this.likedByMe,
+    required this.likeId,
     required this.user,
   });
 
@@ -33,21 +37,10 @@ class PostModel {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       count: PostCount.fromJson(json['_count']),
+      likedByMe: json['likedByMe'] ?? false,
+      likeId: json['likeId'],
       user: UserNameModel.fromJson(json['user']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'caption': caption,
-      'imageUrl': imageUrl,
-      'imagePublicId': imagePublicId,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      '_count': count.toJson(),
-    };
   }
 }
 

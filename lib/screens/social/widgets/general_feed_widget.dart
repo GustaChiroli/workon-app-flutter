@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:workon_app/model/post/comment_model.dart';
 import 'package:workon_app/model/post/post_model.dart';
+import 'package:workon_app/services/comments/comment_service.dart';
+import 'package:workon_app/services/likes/like_service.dart';
 import 'package:workon_app/services/post/post_services.dart';
 import 'package:workon_app/widgets/main_card.dart';
 
@@ -14,13 +17,27 @@ class GeneralFeedWidget extends StatefulWidget {
 }
 
 class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
-  bool isLiked = false;
   final TextEditingController _captionController = TextEditingController();
+  Map<String, TextEditingController> commentControllers = {};
+  Map<String, String> postLikeIds = {};
+  Map<String, bool> loadingLikes = {};
+  Map<String, bool> likedPosts = {};
+  Map<String, bool> openComments = {};
   File? _selectedImage;
   List<PostModel> _posts = [];
+  Map<String, List<CommentModel>> postComments = {};
   void initState() {
     super.initState();
     _getGeneralPosts();
+  }
+
+  @override
+  void dispose() {
+    for (var controller in commentControllers.values) {
+      controller.dispose();
+    }
+    _captionController.dispose();
+    super.dispose();
   }
 
   String timeAgo(DateTime date) {
@@ -80,7 +97,75 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
     _getGeneralPosts(); // atualiza feed
   }
 
-  Future<void> _confirmDelete(String postId) async {
+  Future<void> _createComment(String postId) async {
+    final controller = commentControllers[postId];
+
+    if (controller == null || controller.text.trim().isEmpty) {
+      return;
+    }
+    final commentServices = CommentServices();
+
+    await commentServices.createComment(
+      context: context,
+      content: controller.text.trim(),
+      postId: postId,
+    );
+
+    print('\n\n\nAqui passou!\n\n\n\n');
+    controller.clear();
+
+    _getComments(postId); // atualiza feed
+    _getGeneralPosts();
+  }
+
+  Future<void> _toggleLike(PostModel post) async {
+    final isLiked = likedPosts[post.id] ?? false;
+    final isLoading = loadingLikes[post.id] ?? false;
+
+    if (isLoading) return;
+
+    setState(() {
+      loadingLikes[post.id] = true;
+    });
+
+    final likeService = LikeService();
+    try {
+      if (!isLiked) {
+        final likeId = await likeService.createLike(
+          context: context,
+          postId: post.id,
+        );
+
+        setState(() {
+          likedPosts[post.id] = true;
+          postLikeIds[post.id] = likeId;
+        });
+        print('\n\n\n\n AQUI ó ${postLikeIds[post.id]}\n\n\n\n');
+      } else {
+        final likeId = postLikeIds[post.id];
+
+        if (likeId != null) {
+          await likeService.removeLike(likeId);
+        }
+
+        setState(() {
+          likedPosts[post.id] = false;
+          postLikeIds.remove(post.id);
+        });
+        print('\n\n\n\n AQUI ó t ${postLikeIds[post.id]}\n\n\n\n');
+      }
+
+      _getGeneralPosts(); // atualiza contagem
+    } catch (e) {
+      print(e);
+    }
+
+    setState(() {
+      loadingLikes[post.id] = false;
+    });
+  }
+
+  Future<void> _deletePost(String postId) async {
     if (postId.isEmpty) {
       return;
     }
@@ -89,16 +174,48 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
     _getGeneralPosts();
   }
 
+  Future<void> _deleteComment(String commentId, String postId) async {
+    if (commentId.isEmpty) {
+      return;
+    }
+    final commentServices = CommentServices();
+    await commentServices.removeComment(commentId);
+    _getComments(postId);
+    _getGeneralPosts();
+  }
+
   Future<void> _getGeneralPosts() async {
     final postsService = PostsServices();
     try {
       final response = await postsService.getGeneralPosts(context);
-      if (response != [] && response != null) {
+      if (response != null && response.isNotEmpty) {
         setState(() {
           _posts = response;
         });
+
+        for (var post in response) {
+          likedPosts[post.id] = post.likedByMe;
+
+          if (post.likeId != null) {
+            postLikeIds[post.id] = post.likeId!;
+          }
+        }
       }
-      print("Saved: ${response.first.caption}");
+    } catch (e) {
+      print("Error saving profile changes: $e");
+    }
+  }
+
+  Future<void> _getComments(String postId) async {
+    final commentServices = CommentServices();
+    try {
+      final response = await commentServices.getComments(context, postId);
+      if (response != [] && response != null) {
+        setState(() {
+          postComments[postId] = response;
+        });
+      }
+      print("Saved: ${response.first.content}");
     } catch (e) {
       print("Error saving profile changes: $e");
     }
@@ -190,6 +307,8 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
           ),
         ),
         ..._posts.map((item) {
+          final isLiked = likedPosts[item.id] ?? false;
+          final isCommentOpen = openComments[item.id] ?? false;
           return MainCard(
             child: Column(
               spacing: 25,
@@ -231,7 +350,7 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                         if (value == 'edit') {
                           // _editPost(item);
                         } else if (value == 'delete') {
-                          _confirmDelete(item.id);
+                          _deletePost(item.id);
                         }
                       },
                       itemBuilder: (context) => [
@@ -266,7 +385,6 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                       softWrap: true,
                     ),
 
-                    // 👇 IMAGEM AQUI
                     if (item.imageUrl != null && item.imageUrl!.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       ClipRRect(
@@ -306,11 +424,7 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                         spacing: 10,
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                isLiked = !isLiked;
-                              });
-                            },
+                            onTap: () => _toggleLike(item),
                             child: Icon(
                               isLiked
                                   ? Icons.favorite
@@ -340,14 +454,20 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                         children: [
                           GestureDetector(
                             onTap: () {
+                              final newState = !isCommentOpen;
+
                               setState(() {
-                                isLiked = !isLiked;
+                                openComments[item.id] = newState;
                               });
+
+                              if (newState) {
+                                _getComments(item.id);
+                              }
                             },
                             child: Icon(
-                              isLiked
-                                  ? Icons.chat_bubble_outline_outlined
-                                  : Icons.chat_bubble_outlined,
+                              isCommentOpen
+                                  ? Icons.chat_bubble_outlined
+                                  : Icons.chat_bubble_outline_outlined,
                               color: Color(0xFFE0E0E4),
                               size: 18,
                             ),
@@ -364,6 +484,155 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                     ),
                   ],
                 ),
+                if (isCommentOpen) ...[
+                  Divider(height: 1, thickness: 1, color: Color(0xFF27272A)),
+                  ...(postComments[item.id] ?? []).map((commentItem) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const CircleAvatar(
+                              radius: 19,
+                              backgroundColor: Color(0xFFFF6900),
+                              child: Icon(
+                                Icons.person,
+                                size: 19,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF27272A),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF27272A),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        commentItem.user.fullName,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        commentItem.content,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                        softWrap: true,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${timeAgo(commentItem.createdAt)}',
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(
+                                    Icons.more_vert,
+                                    color: Colors.white54,
+                                  ),
+                                  color: const Color(0xFF18181B),
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      // _editPost(item);
+                                    } else if (value == 'delete') {
+                                      _deleteComment(commentItem.id, item.id);
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.delete,
+                                            size: 18,
+                                            color: Colors.red,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Excluir Comentario',
+                                            style: TextStyle(
+                                              color: Color(0xFFFFFFFF),
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: commentControllers.putIfAbsent(
+                            item.id,
+                            () => TextEditingController(),
+                          ),
+                          minLines: 1,
+                          maxLines: 4, // cresce até 4 linhas
+                          keyboardType: TextInputType.multiline,
+                          decoration: const InputDecoration(
+                            fillColor: Color(0xFF27272A),
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFF3E3E46)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8),
+                              ),
+                            ),
+
+                            hintText: 'Escreva um comentário...',
+                          ),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _createComment(item.id),
+                        icon: const Icon(Icons.send, color: Color(0xFFFF6900)),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           );
