@@ -1,6 +1,11 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:workon_app/services/auth_service.dart';
 import 'package:workon_app/services/users/users_services.dart';
+import 'package:workon_app/storage/user_logged_storage.dart';
 import 'package:workon_app/widgets/main_card.dart';
 import 'package:workon_app/widgets/page_base_widget.dart';
 
@@ -16,11 +21,13 @@ class _ProfilePageState extends State<ProfilePage> {
   final emailController = TextEditingController();
   final weightController = TextEditingController();
   final heightController = TextEditingController();
+  String? imageUrl = "";
   String? memberSince;
   String monthSince = "";
   bool isLoading = true;
   String selectedGoal = "BUILD_MUSCLE";
   bool isEditing = false;
+  File? _selectedImage;
 
   Map<String, dynamic> buildPatchBody() {
     final Map<String, dynamic> body = {};
@@ -112,13 +119,34 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _saveProfileChanges() async {
     final usersService = UsersServices();
 
-    final body = buildPatchBody();
-
     try {
-      final response = await usersService.editUser(body, context);
-      print("Saved: ${response?.data}");
+      FormData formData = FormData.fromMap({
+        ...buildPatchBody(),
+
+        if (_selectedImage != null)
+          "image": await MultipartFile.fromFile(
+            _selectedImage!.path,
+            filename: "profile.jpg",
+          ),
+      });
+
+      final response = await usersService.editUser(formData, context);
+
+      _profileData();
     } catch (e) {
       print("Error saving profile changes: $e");
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final usersService = UsersServices();
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
     }
   }
 
@@ -128,6 +156,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _profileData() async {
+    UserLoggedStorage userLoggedStorage = UserLoggedStorage();
     final usersService = UsersServices();
     final user = await usersService.getMe(context);
     if (user != null) {
@@ -141,9 +170,12 @@ class _ProfilePageState extends State<ProfilePage> {
         if (memberSince != null) {
           monthSince = formatDate(int.parse(memberSince!.substring(5, 7)));
         }
-
+        imageUrl = user.imageUrl ?? "";
         isLoading = false;
       });
+      if (imageUrl != null) {
+        await userLoggedStorage.saveUserImage(imageUrl!);
+      }
     }
   }
 
@@ -169,15 +201,50 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 35,
-                            backgroundColor: Color(0xFFFF6900),
-                            child: Icon(
-                              Icons.person,
-                              size: 35,
-                              color: Colors.white,
-                            ),
+                          Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 35,
+                                backgroundImage: _selectedImage != null
+                                    ? FileImage(_selectedImage!)
+                                    : (imageUrl != null && imageUrl!.isNotEmpty
+                                              ? NetworkImage(imageUrl!)
+                                              : null)
+                                          as ImageProvider?,
+                                child: imageUrl == null || imageUrl!.isEmpty
+                                    ? const Icon(Icons.person, size: 35)
+                                    : null,
+                              ),
+
+                              if (isEditing)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _pickImage();
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFF6900),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFF111113),
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
+
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -264,12 +331,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                       // Example action for login button
                                       if (isEditing) {
                                         _saveProfileChanges();
-                                        print("Saving profile changes...");
                                       }
                                       setState(() {
                                         isEditing = !isEditing;
                                       });
-                                      print("Edit Profile");
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Color(0xFFFF6900),

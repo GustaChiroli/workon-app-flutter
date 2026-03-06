@@ -7,6 +7,7 @@ class UserModel {
   final String? createdAt;
   final double? height;
   final double? weight;
+  final String? imageUrl;
   final List<FollowModel>? followers;
   final List<FollowModel>? followings;
 
@@ -19,6 +20,7 @@ class UserModel {
     required this.createdAt,
     this.height,
     this.weight,
+    required this.imageUrl,
     this.followers,
     this.followings,
   });
@@ -33,6 +35,7 @@ class UserModel {
       createdAt: json['createdAt'],
       height: _parseToDouble(json['height']),
       weight: _parseToDouble(json['weight']),
+      imageUrl: json['imageUrl'],
       followers: (json['followers'] as List? ?? [])
           .map((e) => FollowModel.fromJson(e))
           .toList(),

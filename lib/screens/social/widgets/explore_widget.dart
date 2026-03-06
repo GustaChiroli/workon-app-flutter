@@ -26,8 +26,6 @@ class _ExploreWidgetState extends State<ExploreWidget> {
       if (response != null) {
         final currentUserId = await _userIdStorage.getUser();
 
-        print('CORRECT USER ID AQUI\n\n\n\n\n $currentUserId');
-
         final isFollowing =
             response.followers?.any((f) => f.follower.id == currentUserId) ??
             false;
@@ -124,14 +122,11 @@ class _ExploreWidgetState extends State<ExploreWidget> {
                 child: MainCard(
                   child: Row(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 35,
-                        backgroundColor: Color(0xFFFF6900),
-                        child: Icon(
-                          Icons.person,
-                          size: 35,
-                          color: Colors.white,
-                        ),
+                        backgroundImage: _user?.imageUrl != null
+                            ? NetworkImage(_user!.imageUrl!)
+                            : null,
                       ),
                       const SizedBox(width: 16),
                       Column(

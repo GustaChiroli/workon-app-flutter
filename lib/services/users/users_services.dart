@@ -27,17 +27,19 @@ class UsersServices {
     }
   }
 
-  Future<Response?> editUser(user, context) async {
+  Future<Response?> editUser(FormData formData, context) async {
     try {
       Dio dio = await DioClient.getInstance(context: context);
+
       Response response = await dio.patch(
         '/users/me',
-        data: user,
-        options: Options(headers: {'Content-Type': 'application/json'}),
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
 
       return response;
     } catch (e) {
+      print(e);
       return null;
     }
   }

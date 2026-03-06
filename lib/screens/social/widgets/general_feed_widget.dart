@@ -7,6 +7,7 @@ import 'package:workon_app/model/post/post_model.dart';
 import 'package:workon_app/services/comments/comment_service.dart';
 import 'package:workon_app/services/likes/like_service.dart';
 import 'package:workon_app/services/post/post_services.dart';
+import 'package:workon_app/storage/user_logged_storage.dart';
 import 'package:workon_app/widgets/main_card.dart';
 
 class GeneralFeedWidget extends StatefulWidget {
@@ -23,12 +24,14 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
   Map<String, bool> loadingLikes = {};
   Map<String, bool> likedPosts = {};
   Map<String, bool> openComments = {};
+  String userImageString = "";
   File? _selectedImage;
   List<PostModel> _posts = [];
   Map<String, List<CommentModel>> postComments = {};
   void initState() {
     super.initState();
     _getGeneralPosts();
+    _getImageuser();
   }
 
   @override
@@ -111,7 +114,6 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
       postId: postId,
     );
 
-    print('\n\n\nAqui passou!\n\n\n\n');
     controller.clear();
 
     _getComments(postId); // atualiza feed
@@ -140,7 +142,6 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
           likedPosts[post.id] = true;
           postLikeIds[post.id] = likeId;
         });
-        print('\n\n\n\n AQUI ó ${postLikeIds[post.id]}\n\n\n\n');
       } else {
         final likeId = postLikeIds[post.id];
 
@@ -152,7 +153,6 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
           likedPosts[post.id] = false;
           postLikeIds.remove(post.id);
         });
-        print('\n\n\n\n AQUI ó t ${postLikeIds[post.id]}\n\n\n\n');
       }
 
       _getGeneralPosts(); // atualiza contagem
@@ -182,6 +182,20 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
     await commentServices.removeComment(commentId);
     _getComments(postId);
     _getGeneralPosts();
+  }
+
+  Future<void> _getImageuser() async {
+    UserLoggedStorage userLoggedStorage = new UserLoggedStorage();
+    try {
+      final userImage = await userLoggedStorage.getUserImage();
+      if (userImage != null && userImage.isNotEmpty) {
+        setState(() {
+          userImageString = userImage;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _getGeneralPosts() async {
@@ -215,7 +229,6 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
           postComments[postId] = response;
         });
       }
-      print("Saved: ${response.first.content}");
     } catch (e) {
       print("Error saving profile changes: $e");
     }
@@ -232,10 +245,11 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
             children: [
               Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 28,
-                    backgroundColor: Color(0xFFFF6900),
-                    child: Icon(Icons.person, size: 28, color: Colors.white),
+                    backgroundImage: userImageString != null
+                        ? NetworkImage(userImageString!)
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -315,10 +329,11 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
               children: [
                 Row(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 28,
-                      backgroundColor: Color(0xFFFF6900),
-                      child: Icon(Icons.person, size: 28, color: Colors.white),
+                      backgroundImage: item.user.imageUrl != null
+                          ? NetworkImage(item.user.imageUrl!)
+                          : null,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -493,14 +508,11 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                         Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            const CircleAvatar(
+                            CircleAvatar(
                               radius: 19,
-                              backgroundColor: Color(0xFFFF6900),
-                              child: Icon(
-                                Icons.person,
-                                size: 19,
-                                color: Colors.white,
-                              ),
+                              backgroundImage: commentItem.user.imageUrl != null
+                                  ? NetworkImage(commentItem.user.imageUrl!)
+                                  : null,
                             ),
                           ],
                         ),

@@ -39,10 +39,14 @@ class CommentModel {
 
 class UserNameModel {
   final String fullName;
+  final String? imageUrl;
 
-  UserNameModel({required this.fullName});
+  UserNameModel({required this.fullName, this.imageUrl});
 
   factory UserNameModel.fromJson(Map<String, dynamic> json) {
-    return UserNameModel(fullName: json['fullName']);
+    return UserNameModel(
+      fullName: json['fullName'],
+      imageUrl: json['imageUrl'],
+    );
   }
 }

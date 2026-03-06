@@ -22,7 +22,8 @@ class AuthService {
       if (response.statusCode == 200 && response.data['access_token'] != null) {
         await _tokenStorage.saveToken(response.data['access_token']);
         await _userIdStorage.saveUser(response.data['user']['id']);
-        var teste = await _userIdStorage.getUser();
+        await _userIdStorage.saveUserImage(response.data['user']['imageUrl']);
+        var teste = await _userIdStorage.getUserImage();
         print("\n\n\nResponse login: ${teste}\n\n\n");
         return true;
       }
