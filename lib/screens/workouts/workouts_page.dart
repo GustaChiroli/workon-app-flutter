@@ -2,23 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:workon_app/screens/social/widgets/explore_widget.dart';
 import 'package:workon_app/screens/social/widgets/general_feed_widget.dart';
 import 'package:workon_app/screens/social/widgets/my_feed_widget.dart';
+import 'package:workon_app/screens/workouts/widgets/free_workouts_widget.dart';
+import 'package:workon_app/screens/workouts/widgets/my_workouts_widget.dart';
+import 'package:workon_app/screens/workouts/widgets/premium_workouts_widget.dart';
 import 'package:workon_app/widgets/main_card.dart';
 import 'package:workon_app/widgets/page_base_widget.dart';
 
-class SocialPage extends StatefulWidget {
-  const SocialPage({super.key});
+class WorkoutsPage extends StatefulWidget {
+  const WorkoutsPage({super.key});
 
   @override
-  State<SocialPage> createState() => _SocialPageState();
+  State<WorkoutsPage> createState() => _WorkoutsPageState();
 }
 
-class _SocialPageState extends State<SocialPage> {
+class _WorkoutsPageState extends State<WorkoutsPage> {
   int selectedButtonIndex = 1;
   @override
   Widget build(BuildContext context) {
     return PageBaseWidget(
-      title: "Social",
-      subtitle: "Connect with your friends",
+      title: "Treinos",
+      subtitle: "Escolha seu plano de treino",
       child: Column(
         spacing: 20,
         children: [
@@ -51,7 +54,7 @@ class _SocialPageState extends State<SocialPage> {
                       });
                     },
                     child: Text(
-                      'Feed',
+                      'Gratuitos',
                       style: TextStyle(
                         color: selectedButtonIndex == 1
                             ? Color(0xFFFF6900)
@@ -83,7 +86,7 @@ class _SocialPageState extends State<SocialPage> {
                       });
                     },
                     child: Text(
-                      'Explorar',
+                      'Meus',
                       style: TextStyle(
                         color: selectedButtonIndex == 2
                             ? Color(0xFFFF6900)
@@ -115,7 +118,7 @@ class _SocialPageState extends State<SocialPage> {
                       });
                     },
                     child: Text(
-                      'Meu Feed',
+                      'Comprar',
                       style: TextStyle(
                         color: selectedButtonIndex == 3
                             ? Color(0xFFFF6900)
@@ -128,10 +131,10 @@ class _SocialPageState extends State<SocialPage> {
             ),
           ),
           selectedButtonIndex == 1
-              ? GeneralFeedWidget()
+              ? FreeWorkoutsWidget()
               : selectedButtonIndex == 2
-              ? ExploreWidget()
-              : MyFeedWidget(),
+              ? MyWorkoutsWidget()
+              : PremiumWorkoutsWidget(),
         ],
       ),
     );

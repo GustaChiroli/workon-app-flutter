@@ -19,12 +19,17 @@ class AuthService {
         data: {'email': email, 'password': password},
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
-      if (response.statusCode == 200 && response.data['access_token'] != null) {
+      if (response.statusCode == 200 &&
+          response.data['access_token'] != null &&
+          response.data['user']['id'] != null) {
         await _tokenStorage.saveToken(response.data['access_token']);
         await _userIdStorage.saveUser(response.data['user']['id']);
-        await _userIdStorage.saveUserImage(response.data['user']['imageUrl']);
-        var teste = await _userIdStorage.getUserImage();
-        print("\n\n\nResponse login: ${teste}\n\n\n");
+        print('entrou aqui');
+        if (response.data['user']['imageUrl'] != null) {
+          await _userIdStorage.saveUserImage(response.data['user']['imageUrl']);
+          var teste = await _userIdStorage.getUserImage();
+          print("\n\n\nResponse login: ${teste}\n\n\n");
+        }
         return true;
       }
       return false;

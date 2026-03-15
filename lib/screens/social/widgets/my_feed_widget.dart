@@ -271,7 +271,9 @@ class _MyFeedWidgetState extends State<MyFeedWidget> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundImage: NetworkImage(userImageString!),
+                    backgroundImage: userImageString.isNotEmpty
+                        ? NetworkImage(userImageString)
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -353,7 +355,9 @@ class _MyFeedWidgetState extends State<MyFeedWidget> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundImage: item.user.imageUrl != null
+                      backgroundImage:
+                          (item.user.imageUrl != null &&
+                              item.user.imageUrl!.startsWith('http'))
                           ? NetworkImage(item.user.imageUrl!)
                           : null,
                     ),
@@ -532,7 +536,11 @@ class _MyFeedWidgetState extends State<MyFeedWidget> {
                           children: [
                             CircleAvatar(
                               radius: 19,
-                              backgroundImage: commentItem.user.imageUrl != null
+                              backgroundImage:
+                                  (commentItem.user.imageUrl != null &&
+                                      commentItem.user.imageUrl!.startsWith(
+                                        'http',
+                                      ))
                                   ? NetworkImage(commentItem.user.imageUrl!)
                                   : null,
                             ),

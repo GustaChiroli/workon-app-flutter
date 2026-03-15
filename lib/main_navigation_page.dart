@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:workon_app/screens/home.dart';
 import 'package:workon_app/screens/profile_page.dart';
 import 'package:workon_app/screens/social/social_page.dart';
+import 'package:workon_app/screens/workouts/workouts_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -73,17 +74,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           unselectedItemColor: Color(0xFF71717B),
           backgroundColor: const Color(0xFF121212),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
             BottomNavigationBarItem(
               icon: Icon(Icons.fitness_center),
-              label: "Workouts",
+              label: "Treinos",
             ),
             BottomNavigationBarItem(icon: Icon(Icons.people), label: "Social"),
             BottomNavigationBarItem(
               icon: Icon(Icons.show_chart),
-              label: "Progress",
+              label: "Progresso",
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Perfil"),
           ],
         ),
       ),

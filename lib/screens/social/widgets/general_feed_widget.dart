@@ -247,8 +247,8 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundImage: userImageString != null
-                        ? NetworkImage(userImageString!)
+                    backgroundImage: userImageString.isNotEmpty
+                        ? NetworkImage(userImageString)
                         : null,
                   ),
                   const SizedBox(width: 16),
@@ -256,7 +256,7 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                     child: TextField(
                       controller: _captionController,
                       minLines: 1,
-                      maxLines: 4, // cresce até 4 linhas
+                      maxLines: 4,
                       keyboardType: TextInputType.multiline,
                       decoration: const InputDecoration(
                         hintText: 'No que você está pensando?',
@@ -331,7 +331,9 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundImage: item.user.imageUrl != null
+                      backgroundImage:
+                          (item.user.imageUrl != null &&
+                              item.user.imageUrl!.startsWith('http'))
                           ? NetworkImage(item.user.imageUrl!)
                           : null,
                     ),
@@ -510,7 +512,11 @@ class _GeneralFeedWidgetState extends State<GeneralFeedWidget> {
                           children: [
                             CircleAvatar(
                               radius: 19,
-                              backgroundImage: commentItem.user.imageUrl != null
+                              backgroundImage:
+                                  (commentItem.user.imageUrl != null &&
+                                      commentItem.user.imageUrl!.startsWith(
+                                        'http',
+                                      ))
                                   ? NetworkImage(commentItem.user.imageUrl!)
                                   : null,
                             ),

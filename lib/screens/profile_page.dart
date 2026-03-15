@@ -57,18 +57,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String formatDate(int month) {
     final monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
     return "${monthNames[month - 1]}";
   }
@@ -82,6 +82,17 @@ class _ProfilePageState extends State<ProfilePage> {
           .split('_')
           .map((word) => word[0].toUpperCase() + word.substring(1))
           .join(' ');
+    }
+
+    const Map<String, String> goalTranslations = {
+      "BUILD_MUSCLE": "Ganhar massa muscular",
+      "LOSE_WEIGHT": "Perder peso",
+      "STAY_FIT": "Manter a forma",
+      "INCREASE_STRENGTH": "Aumentar força",
+    };
+
+    String translateGoal(String goal) {
+      return goalTranslations[goal] ?? goal;
     }
 
     return GestureDetector(
@@ -106,7 +117,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         child: Text(
-          formatGoal(title),
+          translateGoal(title),
           style: TextStyle(
             color: isSelected ? const Color(0xFFFF6900) : Colors.white,
             fontWeight: FontWeight.w500,
@@ -188,8 +199,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return PageBaseWidget(
-      title: "Profile",
-      subtitle: "Manage your account",
+      title: "Perfil",
+      subtitle: "Gerencie seu perfil",
       child: Column(
         children: [
           Row(
@@ -286,8 +297,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     child: Text(
                                       memberSince != null
-                                          ? "Member since $monthSince ${memberSince!.substring(0, 4)}"
-                                          : "Member since --",
+                                          ? "Membro desde $monthSince ${memberSince!.substring(0, 4)}"
+                                          : "Membro desde --",
                                       style: TextStyle(
                                         color: Color(0xFFF38707),
                                         fontSize: 12,
@@ -318,8 +329,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     label: Text(
                                       isEditing
-                                          ? "Save Changes"
-                                          : "Edit Profile",
+                                          ? "Salvar Alterações"
+                                          : "Editar Perfil",
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
@@ -371,7 +382,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           SizedBox(width: 10),
                           Text(
-                            "Personal Information",
+                            "Informações Pessoais",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -383,7 +394,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Row(
                         children: [
                           Text(
-                            "Full Name",
+                            "Nome Completo",
                             style: TextStyle(
                               color: const Color.fromARGB(234, 255, 255, 255),
                             ),
@@ -489,7 +500,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "Weight",
+                                  "Peso",
                                   style: TextStyle(
                                     color: Color.fromARGB(234, 255, 255, 255),
                                   ),
@@ -546,7 +557,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "Height",
+                                  "Altura",
                                   style: TextStyle(
                                     color: Color.fromARGB(234, 255, 255, 255),
                                   ),
@@ -620,7 +631,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            "Fitness Goal",
+                            "Objetivo",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -659,7 +670,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: Color(0xFFEF4444),
                     ),
                     label: const Text(
-                      "Logout",
+                      "Sair",
                       style: TextStyle(
                         color: Color(0xFFEF4444),
                         fontWeight: FontWeight.w600,
