@@ -21,14 +21,15 @@ class _ExploreWidgetState extends State<ExploreWidget> {
 
   Future<void> getUserByEmail(String email) async {
     final postsService = UsersServices();
+
     try {
       final response = await postsService.getUserByEmail(context, email);
+      print('\n\n\n\n\nAqui está o email: $response \n\n\n\n\n\n');
       if (response != null) {
         final currentUserId = await _userIdStorage.getUser();
 
         final isFollowing =
-            response.followers?.any((f) => f.follower.id == currentUserId) ??
-            false;
+            response.followers?.any((f) => f.user.id == currentUserId) ?? false;
 
         setState(() {
           _user = response;

@@ -14,12 +14,24 @@ class FreeWorkoutsWidget extends StatefulWidget {
 
 class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
   List<WorkoutGroup> _workouts = [];
+  Map<String, int> workoutTypeMap = {};
+  List<String> TypesTraine = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
   void initState() {
     super.initState();
-    // _getMyPosts();
-    // _getImageuser();
     _getFreeWorkouts();
+  }
+
+  Future<void> startWorkout(String workoutId) async {
+    final workoutsService = WorkoutsService();
+    try {
+      final response = await workoutsService.startUserWorkout(
+        context,
+        workoutId,
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _getFreeWorkouts() async {
@@ -43,6 +55,14 @@ class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
       spacing: 20,
       children: [
         ..._workouts.map((item) {
+          final selectedIndex = workoutTypeMap[item.id] ?? 0;
+
+          // print('GROUP: ${item.name}');
+          // print('INDEX: $selectedIndex');
+          // print('EXERCISES: ${item.workouts[selectedIndex].exercises.length}');
+          // print(
+          //   'WORKOUT: ${item.workouts[selectedIndex].name} | EX: ${item.workouts[selectedIndex].exercises.length}',
+          // );
           return MainCard(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,8 +139,8 @@ class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
                         children: [
                           Expanded(
                             child: Text(
-                              item.workouts.first.description ??
-                                  "no description for this workout",
+                              item.workouts[selectedIndex].description ??
+                                  'sem descrição de treino',
                               style: TextStyle(color: Color(0xFF9F9FA9)),
                               softWrap: true,
                             ),
@@ -138,7 +158,8 @@ class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
                             size: 19,
                           ),
                           Text(
-                            item.estimatedDurationMinutes.toString(),
+                            item.workouts[0].estimatedDurationMinutes
+                                .toString(),
                             style: TextStyle(
                               color: Color(0xFF71717B),
                               fontSize: 13,
@@ -151,7 +172,7 @@ class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
                             size: 19,
                           ),
                           Text(
-                            item.workouts.length.toString(),
+                            item.workouts[0].exercises.length.toString(),
                             style: TextStyle(
                               color: Color(0xFF71717B),
                               fontSize: 13,
@@ -159,7 +180,34 @@ class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      SizedBox(height: 15),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ...item.workouts.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final subItem = entry.value;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  workoutTypeMap[item.id] = index;
+                                });
+                              },
+                              child: CircleAvatar(
+                                backgroundColor: selectedIndex == index
+                                    ? Color(0xFFFF6900)
+                                    : Color(0xFF27272A),
+                                child: Text(
+                                  TypesTraine[subItem.order],
+                                  style: TextStyle(color: Color(0xFFFFFFFF)),
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                      SizedBox(height: 15),
+
                       Row(
                         children: [
                           Expanded(
@@ -171,11 +219,17 @@ class _FreeWorkoutsWidgetState extends State<FreeWorkoutsWidget> {
                                 backgroundColor: Color(0xFFFF6900),
                               ),
                               onPressed: () {
+                                startWorkout(item.workouts[selectedIndex].id);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        WorkoutStartedWidget(),
+                                    builder: (context) => WorkoutStartedWidget(
+                                      workoutExercises: item
+                                          .workouts[selectedIndex]
+                                          .exercises,
+                                      workoutId:
+                                          item.workouts[selectedIndex].id,
+                                    ),
                                   ),
                                 );
                               },

@@ -62,14 +62,14 @@ class UserModel {
 
 class FollowModel {
   final String id;
-  final UserModel follower;
+  final UserModel user;
 
-  FollowModel({required this.id, required this.follower});
+  FollowModel({required this.id, required this.user});
 
   factory FollowModel.fromJson(Map<String, dynamic> json) {
     return FollowModel(
       id: json['id'],
-      follower: UserModel.fromJson(json['follower']),
+      user: UserModel.fromJson(json['follower'] ?? json['following']),
     );
   }
 }

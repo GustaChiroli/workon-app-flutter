@@ -6,6 +6,7 @@ class MainCard extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final Color? BGcolor;
   final bool? haveBorder;
+  final double? radiusBorder;
 
   const MainCard({
     super.key,
@@ -14,6 +15,7 @@ class MainCard extends StatelessWidget {
     this.margin = EdgeInsets.zero,
     this.BGcolor = const Color(0xFF1C1C1E),
     this.haveBorder = true,
+    this.radiusBorder,
   });
 
   @override
@@ -24,7 +26,7 @@ class MainCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: BGcolor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(radiusBorder ?? 16),
         border: Border.all(
           color: const Color(0xFF27272A),
           width: haveBorder ?? false ? 1 : 0,

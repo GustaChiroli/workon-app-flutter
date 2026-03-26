@@ -5,6 +5,7 @@ class Workout {
   final String? description;
   final String name;
   final int order;
+  final int? estimatedDurationMinutes;
   final List<WorkoutExercise> exercises;
 
   Workout({
@@ -12,6 +13,7 @@ class Workout {
     this.description,
     required this.name,
     required this.order,
+    this.estimatedDurationMinutes,
     required this.exercises,
   });
 
@@ -21,6 +23,7 @@ class Workout {
       description: json['description'],
       name: json['name'],
       order: json['order'],
+      estimatedDurationMinutes: json['estimatedDurationMinutes'],
       exercises: (json['exercises'] as List)
           .map((e) => WorkoutExercise.fromJson(e))
           .toList(),

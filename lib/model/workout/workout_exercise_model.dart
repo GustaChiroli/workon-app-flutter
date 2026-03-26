@@ -1,6 +1,7 @@
 import 'exercise_model.dart';
 
 class WorkoutExercise {
+  final int order;
   final int? sets;
   final int? reps;
   final int? durationSeconds;
@@ -8,6 +9,7 @@ class WorkoutExercise {
   final Exercise exercise;
 
   WorkoutExercise({
+    required this.order,
     this.sets,
     this.reps,
     this.durationSeconds,
@@ -17,6 +19,7 @@ class WorkoutExercise {
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
     return WorkoutExercise(
+      order: json['order'],
       sets: json['sets'],
       reps: json['reps'],
       durationSeconds: json['durationSeconds'],
