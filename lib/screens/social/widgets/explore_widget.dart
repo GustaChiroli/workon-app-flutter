@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:workon_app/model/user_explorer_serach_model.dart';
 import 'package:workon_app/model/user_model.dart';
 import 'package:workon_app/services/follow/follow_service.dart';
 import 'package:workon_app/services/users/users_services.dart';
@@ -15,7 +16,7 @@ class ExploreWidget extends StatefulWidget {
 class _ExploreWidgetState extends State<ExploreWidget> {
   final TextEditingController _emailController = TextEditingController();
   UserLoggedStorage _userIdStorage = UserLoggedStorage();
-  UserModel? _user;
+  UserSearchModel? _user;
   bool _isFollowing = false;
   bool _isLoadingFollow = false;
 
@@ -23,8 +24,8 @@ class _ExploreWidgetState extends State<ExploreWidget> {
     final postsService = UsersServices();
 
     try {
+      print('\n\n\n\n\nAqui está o email: $email \n\n\n\n\n\n');
       final response = await postsService.getUserByEmail(context, email);
-      print('\n\n\n\n\nAqui está o email: $response \n\n\n\n\n\n');
       if (response != null) {
         final currentUserId = await _userIdStorage.getUser();
 
@@ -134,7 +135,7 @@ class _ExploreWidgetState extends State<ExploreWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _user!.name ?? 'Unknown User',
+                            _user!.fullName ?? 'Unknown User',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,

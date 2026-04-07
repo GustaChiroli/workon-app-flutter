@@ -31,17 +31,17 @@ class UserModel {
       email: json['email'],
       name: json['fullName'],
       role: json['role'],
-      fitnessGoal: json['fitnessGoal'] ?? "BUILD_MUSCLE",
       createdAt: json['createdAt'],
-      height: _parseToDouble(json['height']),
-      weight: _parseToDouble(json['weight']),
       imageUrl: json['imageUrl'],
-      followers: (json['followers'] as List? ?? [])
-          .map((e) => FollowModel.fromJson(e))
-          .toList(),
       followings: (json['following'] as List? ?? [])
           .map((e) => FollowModel.fromJson(e))
           .toList(),
+      followers: (json['followers'] as List? ?? [])
+          .map((e) => FollowModel.fromJson(e))
+          .toList(),
+      fitnessGoal: json['fitnessGoal'] ?? "BUILD_MUSCLE",
+      height: _parseToDouble(json['height']),
+      weight: _parseToDouble(json['weight']),
     );
   }
 
